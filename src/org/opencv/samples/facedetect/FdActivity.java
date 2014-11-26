@@ -7,6 +7,7 @@ import java.io.InputStream;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
+import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
@@ -15,16 +16,24 @@ import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.core.Point;
+import org.opencv.imgproc.Imgproc;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.objdetect.CascadeClassifier;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
+import android.hardware.Camera;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.OrientationEventListener;
+import android.view.Surface;
 import android.view.WindowManager;
 
 public class FdActivity extends Activity implements CvCameraViewListener2 {
@@ -46,14 +55,15 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private CascadeClassifier      mJavaDetector;
     private DetectionBasedTracker  mNativeDetector;
 
-    private int                    mDetectorType       = JAVA_DETECTOR;
+    private int                    mDetectorType       = NATIVE_DETECTOR;
     private String[]               mDetectorName;
 
     private float                  mRelativeFaceSize   = 0.2f;
     private int                    mAbsoluteFaceSize   = 0;
 
     private CameraBridgeViewBase   mOpenCvCameraView;
-
+  
+    
     private BaseLoaderCallback  mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -80,12 +90,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         is.close();
                         os.close();
 
-                        mJavaDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
-                        if (mJavaDetector.empty()) {
-                            Log.e(TAG, "Failed to load cascade classifier");
-                            mJavaDetector = null;
-                        } else
-                            Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
+                        //mJavaDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
+                        //if (mJavaDetector.empty()) {
+                        //    Log.e(TAG, "Failed to load cascade classifier");
+                        //    mJavaDetector = null;
+                        //} else
+                        //    Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
 
                         mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
 
@@ -123,8 +133,11 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
         setContentView(R.layout.face_detect_surface_view);
 
-        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
+        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);//(CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
+        
         mOpenCvCameraView.setCvCameraViewListener(this);
+        
+               
     }
 
     @Override
@@ -161,7 +174,26 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
-
+//        Configuration config = getResources().getConfiguration();
+//        Display display = ((WindowManager)mOpenCvCameraView.getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+        //Mat dst = new Mat();
+//        float[] R;
+//        float[] I;
+//        float[] values;
+        //boolean success = SensorManager.getRotationMatrix(R, I, gravity, geomag);
+//        if(display.getRotation() == Surface.ROTATION_0){
+//        	//mRgba.t();
+//        	//Point cp = new Point(mRgba.cols()/2,mRgba.rows()/2);
+//        	//Mat rot = Imgproc.getRotationMatrix2D(cp,-90,1);
+//        	mOpenCvCameraView.rot90();
+//        	//Size sz = new Size(200,200);
+//        	//mOpenCvCameraView.setResolution(100,100);
+//        	//Imgproc.warpAffine(mRgba,dst,rot,new Size(mRgba.cols(),mRgba.rows()));
+//        	//dst.copyTo(mRgba);
+//        	Point p3 = new Point(50.0,50.0);
+//            Point p4 = new Point(70.0,70.0);
+//            Core.rectangle(mRgba, p3, p4, FACE_RECT_COLOR, 3);
+//        }
         if (mAbsoluteFaceSize == 0) {
             int height = mGray.rows();
             if (Math.round(height * mRelativeFaceSize) > 0) {
@@ -172,14 +204,16 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
         MatOfRect faces = new MatOfRect();
 
-        if (mDetectorType == JAVA_DETECTOR) {
-            if (mJavaDetector != null)
-                mJavaDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
-                        new Size(mAbsoluteFaceSize, 2*mAbsoluteFaceSize), new Size());
-        }
-        else if (mDetectorType == NATIVE_DETECTOR) {
-            if (mNativeDetector != null)
-                mNativeDetector.detect(mGray, faces);
+        //if (mDetectorType == JAVA_DETECTOR) {
+        //    if (mJavaDetector != null)
+        //        mJavaDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
+        //                new Size(mAbsoluteFaceSize, 2*mAbsoluteFaceSize), new Size());
+        //}
+        //else 
+        if (mDetectorType == NATIVE_DETECTOR) {
+            if (mNativeDetector != null){
+            //    mNativeDetector.detect(mGray, faces);
+            }
         }
         else {
             Log.e(TAG, "Detection method is not selected!");
@@ -188,6 +222,10 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         Rect[] facesArray = faces.toArray();
         for (int i = 0; i < facesArray.length; i++)
             Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
+        
+        Point p1 = new Point(0.0,0.0);
+        Point p2 = new Point(10.0,10.0);
+        Core.rectangle(mRgba, p1, p2, FACE_RECT_COLOR, 3);
 
         return mRgba;
     }
@@ -199,7 +237,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mItemFace40 = menu.add("Face size 40%");
         mItemFace30 = menu.add("Face size 30%");
         mItemFace20 = menu.add("Face size 20%");
-        mItemType   = menu.add(mDetectorName[mDetectorType]);
+        //mItemType   = menu.add(mDetectorName[mDetectorType]);
         return true;
     }
 
@@ -214,11 +252,11 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             setMinFaceSize(0.3f);
         else if (item == mItemFace20)
             setMinFaceSize(0.2f);
-        else if (item == mItemType) {
-            int tmpDetectorType = (mDetectorType + 1) % mDetectorName.length;
-            item.setTitle(mDetectorName[tmpDetectorType]);
-            setDetectorType(tmpDetectorType);
-        }
+//        else if (item == mItemType) {
+//            int tmpDetectorType = (mDetectorType + 1) % mDetectorName.length;
+//            item.setTitle(mDetectorName[tmpDetectorType]);
+//            setDetectorType(tmpDetectorType);
+//        }
         return true;
     }
 
@@ -240,4 +278,15 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             }
         }
     }
+//    @Override
+//    public void onConfigurationChanged(Configuration newConfig) {
+//        super.onConfigurationChanged(newConfig);
+//
+//        // Checks the orientation of the screen
+//        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+//           
+//        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+//        		mRgba.t();
+//        }
+//    }
 }
