@@ -42,7 +42,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
     public static final int        JAVA_DETECTOR       = 0;
     public static final int        NATIVE_DETECTOR     = 1;
-
+    
     private MenuItem               mItemFace50;
     private MenuItem               mItemFace40;
     private MenuItem               mItemFace30;
@@ -77,9 +77,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
                     try {
                         // load cascade file from application resources
-                        InputStream is = getResources().openRawResource(R.raw.hogcascade_pedestrians);
+                        InputStream is = getResources().openRawResource(R.raw.hogcascade2);
                         File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-                        mCascadeFile = new File(cascadeDir, "hogcascade_pedestrians.xml");
+                        mCascadeFile = new File(cascadeDir, "hogcascade2.xml");
                         FileOutputStream os = new FileOutputStream(mCascadeFile);
 
                         byte[] buffer = new byte[4096];
@@ -134,6 +134,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         setContentView(R.layout.face_detect_surface_view);
 
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);//(CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
+        
+       // mOpenCvCameraView = (CameraBridgeViewBase) new JavaCameraView(this, -1);
+        //setContentView(mOpenCvCameraView);
         
         mOpenCvCameraView.setCvCameraViewListener(this);
         
@@ -212,7 +215,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         //else 
         if (mDetectorType == NATIVE_DETECTOR) {
             if (mNativeDetector != null){
-            //    mNativeDetector.detect(mGray, faces);
+                mNativeDetector.detect(mGray, faces);
             }
         }
         else {
@@ -226,6 +229,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         Point p1 = new Point(0.0,0.0);
         Point p2 = new Point(10.0,10.0);
         Core.rectangle(mRgba, p1, p2, FACE_RECT_COLOR, 3);
+        Core.putText(mRgba, String.valueOf(facesArray.length), new Point(50.0,50.0),Core.FONT_HERSHEY_SIMPLEX,1.0,new Scalar(0,0,255,255),3);
 
         return mRgba;
     }
