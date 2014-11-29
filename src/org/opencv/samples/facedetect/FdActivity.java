@@ -89,7 +89,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         }
                         is.close();
                         os.close();
-
+//456789
                         //mJavaDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
                         //if (mJavaDetector.empty()) {
                         //    Log.e(TAG, "Failed to load cascade classifier");
