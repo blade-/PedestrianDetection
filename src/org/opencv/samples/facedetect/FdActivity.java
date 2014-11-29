@@ -81,7 +81,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
                         mCascadeFile = new File(cascadeDir, "hogcascade3.xml");
                         FileOutputStream os = new FileOutputStream(mCascadeFile);
-
+                        
                         byte[] buffer = new byte[4096];
                         int bytesRead;
                         while ((bytesRead = is.read(buffer)) != -1) {
@@ -89,7 +89,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         }
                         is.close();
                         os.close();
-//456789
+//45678921e23q
                         //mJavaDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
                         //if (mJavaDetector.empty()) {
                         //    Log.e(TAG, "Failed to load cascade classifier");
