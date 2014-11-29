@@ -5,7 +5,7 @@ include $(CLEAR_VARS)
 #OPENCV_CAMERA_MODULES:=off
 #OPENCV_INSTALL_MODULES:=off
 #OPENCV_LIB_TYPE:=SHARED
-include ../../sdk/native/jni/OpenCV.mk
+include /Users/weihong/Coding/openCV4android/sdk/native/jni/OpenCV.mk
 
 LOCAL_SRC_FILES  := DetectionBasedTracker_jni.cpp
 LOCAL_C_INCLUDES += $(LOCAL_PATH)
