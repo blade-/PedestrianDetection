@@ -4,3 +4,4 @@ gen/*
 .settings/*
 libs/*
 obj/*
+.*
