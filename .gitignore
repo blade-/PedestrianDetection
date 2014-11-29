@@ -1,0 +1,9 @@
+*.mk
+bin/*
+gen/*
+.settings/*
+libs/*
+obj/*
+.cproject
+.classpath
+.project
