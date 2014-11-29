@@ -1,2 +1,6 @@
 *.mk
 bin/*
+gen/*
+.settings/*
+libs/*
+obj/*
