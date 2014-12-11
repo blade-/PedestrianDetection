@@ -40,23 +40,26 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
     private static final String    TAG                 = "OCVSample::Activity";
     private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
-    public static final int        JAVA_DETECTOR       = 0;
-    public static final int        NATIVE_DETECTOR     = 1;
+    private static final Scalar    HEAD_RECT_COLOR     = new Scalar(255, 255, 0, 255);
+    //public static final int        JAVA_DETECTOR       = 0;
+   // public static final int        NATIVE_DETECTOR     = 1;
     
     private MenuItem               mItemFace50;
     private MenuItem               mItemFace40;
     private MenuItem               mItemFace30;
     private MenuItem               mItemFace20;
-    private MenuItem               mItemType;
+  //  private MenuItem               mItemType;
 
     private Mat                    mRgba;
     private Mat                    mGray;
-    private File                   mCascadeFile;
-    private CascadeClassifier      mJavaDetector;
-    private DetectionBasedTracker  mNativeDetector;
+    private File                   mHogCascadeFile;
+    private File                   mLbpCascadeFile;
+   // private CascadeClassifier      mJavaDetector;
+    private DetectionBasedTracker  mNativeFaceDetector;
+    private DetectionBasedTracker  mNativeHeadDetector;
 
-    private int                    mDetectorType       = NATIVE_DETECTOR;
-    private String[]               mDetectorName;
+   // private int                    mDetectorType       = NATIVE_DETECTOR;
+    //private String[]               mDetectorName;
 
     private float                  mRelativeFaceSize   = 0.2f;
     private int                    mAbsoluteFaceSize   = 0;
@@ -78,9 +81,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                     try {
                         // load cascade file from application resources
                         InputStream is = getResources().openRawResource(R.raw.hogcascade_9_998_3_1_150);
+                        InputStream is2 = getResources().openRawResource(R.raw.lbpcascade_frontalface);
                         File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-                        mCascadeFile = new File(cascadeDir, "hogcascade_9_998_3_1_150.xml");
-                        FileOutputStream os = new FileOutputStream(mCascadeFile);
+                        mHogCascadeFile = new File(cascadeDir, "hogcascade_9_998_3_1_150.xml");
+                        mLbpCascadeFile = new File(cascadeDir, "lbocascade_frontalface.xml");
+                        FileOutputStream os = new FileOutputStream(mHogCascadeFile);
+                        FileOutputStream os2 = new FileOutputStream(mLbpCascadeFile);
                         
                         byte[] buffer = new byte[4096];
                         int bytesRead;
@@ -89,6 +95,14 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         }
                         is.close();
                         os.close();
+                        
+                        byte[] buffer2 = new byte[4096];
+                        int bytesRead2;
+                        while ((bytesRead2 = is2.read(buffer2)) != -1) {
+                            os2.write(buffer2, 0, bytesRead2);
+                        }
+                        is2.close();
+                        os2.close();
 //45678921e23q
                         //mJavaDetector = new CascadeClassifier(mCascadeFile.getAbsolutePath());
                         //if (mJavaDetector.empty()) {
@@ -97,7 +111,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         //} else
                         //    Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
 
-                        mNativeDetector = new DetectionBasedTracker(mCascadeFile.getAbsolutePath(), 0);
+                        mNativeHeadDetector = new DetectionBasedTracker(mHogCascadeFile.getAbsolutePath(), 0);
+                        mNativeFaceDetector = new DetectionBasedTracker(mLbpCascadeFile.getAbsolutePath(), 0);
 
                         cascadeDir.delete();
 
@@ -117,9 +132,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     };
 
     public FdActivity() {
-        mDetectorName = new String[2];
-        mDetectorName[JAVA_DETECTOR] = "Java";
-        mDetectorName[NATIVE_DETECTOR] = "Native (tracking)";
+        //mDetectorName = new String[2];
+        //mDetectorName[JAVA_DETECTOR] = "Java";
+        //mDetectorName[NATIVE_DETECTOR] = "Native (tracking)";
 
         Log.i(TAG, "Instantiated new " + this.getClass());
     }
@@ -202,34 +217,49 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             if (Math.round(height * mRelativeFaceSize) > 0) {
                 mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
             }
-            mNativeDetector.setMinFaceSize(mAbsoluteFaceSize);
+            mNativeHeadDetector.setMinFaceSize(mAbsoluteFaceSize);
+            mNativeFaceDetector.setMinFaceSize(mAbsoluteFaceSize);
         }
 
         MatOfRect faces = new MatOfRect();
-
+        MatOfRect heads = new MatOfRect();
         //if (mDetectorType == JAVA_DETECTOR) {
         //    if (mJavaDetector != null)
         //        mJavaDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
         //                new Size(mAbsoluteFaceSize, 2*mAbsoluteFaceSize), new Size());
         //}
         //else 
-        if (mDetectorType == NATIVE_DETECTOR) {
-            if (mNativeDetector != null){
-                mNativeDetector.detect(mGray, faces);
-            }
+        //if (mDetectorType == NATIVE_DETECTOR) {
+        if (mNativeHeadDetector != null){
+            mNativeHeadDetector.detect(mGray, heads);
         }
-        else {
-            Log.e(TAG, "Detection method is not selected!");
+        else{
+        	Log.e(TAG, "No Head Detector!");
         }
+        if (mNativeFaceDetector != null){
+            mNativeFaceDetector.detect(mGray, faces);
+        }
+        else{
+        	Log.e(TAG, "No Face Detector!");
+        }
+            
+       // }
+     //   else {
+    //        Log.e(TAG, "Detection method is not selected!");
+     //   }
 
         Rect[] facesArray = faces.toArray();
+        Rect[] headsArray = heads.toArray();
         for (int i = 0; i < facesArray.length; i++)
             Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
+        for (int i = 0; i < headsArray.length; i++)
+            Core.rectangle(mRgba, headsArray[i].tl(), headsArray[i].br(), HEAD_RECT_COLOR, 3);
         
-        Point p1 = new Point(0.0,0.0);
-        Point p2 = new Point(10.0,10.0);
-        Core.rectangle(mRgba, p1, p2, FACE_RECT_COLOR, 3);
-        Core.putText(mRgba, String.valueOf(facesArray.length), new Point(50.0,50.0),Core.FONT_HERSHEY_SIMPLEX,1.0,new Scalar(0,0,255,255),3);
+       // Point p1 = new Point(0.0,0.0);
+       // Point p2 = new Point(.0,10.0);
+        //Core.rectangle(mRgba, p1, p2, FACE_RECT_COLOR, 3);
+        Core.putText(mRgba, String.valueOf(headsArray.length), new Point(50.0,50.0),Core.FONT_HERSHEY_SIMPLEX,1.0,new Scalar(0,0,255,255),3);
+        Core.putText(mRgba, String.valueOf(facesArray.length), new Point(100.0,50.0),Core.FONT_HERSHEY_SIMPLEX,1.0,new Scalar(255,0,0,255),3);
 
         return mRgba;
     }
@@ -269,19 +299,19 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         mAbsoluteFaceSize = 0;
     }
 
-    private void setDetectorType(int type) {
-        if (mDetectorType != type) {
-            mDetectorType = type;
-
-            if (type == NATIVE_DETECTOR) {
-                Log.i(TAG, "Detection Based Tracker enabled");
-                mNativeDetector.start();
-            } else {
-                Log.i(TAG, "Cascade detector enabled");
-                mNativeDetector.stop();
-            }
-        }
-    }
+ //   private void setDetectorType(int type) {
+ //      if (mDetectorType != type) {
+ //           mDetectorType = type;
+//
+//            if (type == NATIVE_DETECTOR) {
+//                Log.i(TAG, "Detection Based Tracker enabled");
+//                mNativeDetector.start();
+//            } else {
+//                Log.i(TAG, "Cascade detector enabled");
+//                mNativeDetector.stop();
+//            }
+//        }
+//    }
 //    @Override
 //    public void onConfigurationChanged(Configuration newConfig) {
 //        super.onConfigurationChanged(newConfig);
