@@ -77,9 +77,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
                     try {
                         // load cascade file from application resources
-                        InputStream is = getResources().openRawResource(R.raw.hogcascade3);
+                        InputStream is = getResources().openRawResource(R.raw.hogcascade_9_998_3_1_150);
                         File cascadeDir = getDir("cascade", Context.MODE_PRIVATE);
-                        mCascadeFile = new File(cascadeDir, "hogcascade3.xml");
+                        mCascadeFile = new File(cascadeDir, "hogcascade_9_998_3_1_150.xml");
                         FileOutputStream os = new FileOutputStream(mCascadeFile);
                         
                         byte[] buffer = new byte[4096];
@@ -135,7 +135,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);//(CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
         
-       // mOpenCvCameraView = (CameraBridgeViewBase) new JavaCameraView(this, -1);
+        //mOpenCvCameraView = (CameraBridgeViewBase) new JavaCameraView(this, -1);
         //setContentView(mOpenCvCameraView);
         
         mOpenCvCameraView.setCvCameraViewListener(this);
