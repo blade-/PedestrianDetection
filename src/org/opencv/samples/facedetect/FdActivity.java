@@ -44,10 +44,11 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     //public static final int        JAVA_DETECTOR       = 0;
    // public static final int        NATIVE_DETECTOR     = 1;
     
-    private MenuItem               mItemFace50;
+    //private MenuItem               mItemFace50;
     private MenuItem               mItemFace40;
     private MenuItem               mItemFace30;
     private MenuItem               mItemFace20;
+    private MenuItem               mItemFace10;
   //  private MenuItem               mItemType;
 
     private Mat                    mRgba;
@@ -55,8 +56,9 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private File                   mHogCascadeFile;
     private File                   mLbpCascadeFile;
    // private CascadeClassifier      mJavaDetector;
-    private DetectionBasedTracker  mNativeFaceDetector;
-    private DetectionBasedTracker  mNativeHeadDetector;
+    //private DetectionBasedTracker  mNativeFaceDetector;
+   // private DetectionBasedTracker  mNativeHeadDetector;
+    private DetectionBasedTracker  mNativeMultiDetector;
 
    // private int                    mDetectorType       = NATIVE_DETECTOR;
     //private String[]               mDetectorName;
@@ -111,8 +113,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
                         //} else
                         //    Log.i(TAG, "Loaded cascade classifier from " + mCascadeFile.getAbsolutePath());
 
-                        mNativeHeadDetector = new DetectionBasedTracker(mHogCascadeFile.getAbsolutePath(), 0);
-                        mNativeFaceDetector = new DetectionBasedTracker(mLbpCascadeFile.getAbsolutePath(), 0);
+                        mNativeMultiDetector = new DetectionBasedTracker(mHogCascadeFile.getAbsolutePath(),mLbpCascadeFile.getAbsolutePath(), 0);
+                        //mNativeFaceDetector = new DetectionBasedTracker(mLbpCascadeFile.getAbsolutePath(), 0);
 
                         cascadeDir.delete();
 
@@ -181,11 +183,15 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     public void onCameraViewStarted(int width, int height) {
         mGray = new Mat();
         mRgba = new Mat();
+       // mNativeDetector.start();
+       // mNativeDetector.start();
     }
 
     public void onCameraViewStopped() {
         mGray.release();
         mRgba.release();
+       // mNativeDetector.stop();
+       // mNativeDetector.stop();
     }
 
     public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
@@ -217,12 +223,12 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
             if (Math.round(height * mRelativeFaceSize) > 0) {
                 mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
             }
-            mNativeHeadDetector.setMinFaceSize(mAbsoluteFaceSize);
-            mNativeFaceDetector.setMinFaceSize(mAbsoluteFaceSize);
+            //mNativeHeadDetector.setMinFaceSize(mAbsoluteFaceSize);
+            mNativeMultiDetector.setMinFaceSize(mAbsoluteFaceSize);
         }
 
         MatOfRect faces = new MatOfRect();
-        MatOfRect heads = new MatOfRect();
+       // MatOfRect heads = new MatOfRect();
         //if (mDetectorType == JAVA_DETECTOR) {
         //    if (mJavaDetector != null)
         //        mJavaDetector.detectMultiScale(mGray, faces, 1.1, 2, 2, // TODO: objdetect.CV_HAAR_SCALE_IMAGE
@@ -230,17 +236,17 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         //}
         //else 
         //if (mDetectorType == NATIVE_DETECTOR) {
-        if (mNativeHeadDetector != null){
-            mNativeHeadDetector.detect(mGray, heads);
+       // if (mNativeHeadDetector != null){
+         //   mNativeHeadDetector.detect(mGray, heads);
+        //}
+        //else{
+        //	Log.e(TAG, "No Head Detector!");
+        //}
+        if (mNativeMultiDetector != null){
+        	mNativeMultiDetector.detect(mGray, faces);
         }
         else{
-        	Log.e(TAG, "No Head Detector!");
-        }
-        if (mNativeFaceDetector != null){
-            mNativeFaceDetector.detect(mGray, faces);
-        }
-        else{
-        	Log.e(TAG, "No Face Detector!");
+        	Log.e(TAG, "No Multi Detector!");
         }
             
        // }
@@ -249,16 +255,16 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
      //   }
 
         Rect[] facesArray = faces.toArray();
-        Rect[] headsArray = heads.toArray();
+        //Rect[] headsArray = heads.toArray();
         for (int i = 0; i < facesArray.length; i++)
             Core.rectangle(mRgba, facesArray[i].tl(), facesArray[i].br(), FACE_RECT_COLOR, 3);
-        for (int i = 0; i < headsArray.length; i++)
-            Core.rectangle(mRgba, headsArray[i].tl(), headsArray[i].br(), HEAD_RECT_COLOR, 3);
+       // for (int i = 0; i < headsArray.length; i++)
+         //   Core.rectangle(mRgba, headsArray[i].tl(), headsArray[i].br(), HEAD_RECT_COLOR, 3);
         
        // Point p1 = new Point(0.0,0.0);
        // Point p2 = new Point(.0,10.0);
         //Core.rectangle(mRgba, p1, p2, FACE_RECT_COLOR, 3);
-        Core.putText(mRgba, String.valueOf(headsArray.length), new Point(50.0,50.0),Core.FONT_HERSHEY_SIMPLEX,1.0,new Scalar(0,0,255,255),3);
+        //Core.putText(mRgba, String.valueOf(headsArray.length), new Point(50.0,50.0),Core.FONT_HERSHEY_SIMPLEX,1.0,new Scalar(0,0,255,255),3);
         Core.putText(mRgba, String.valueOf(facesArray.length), new Point(100.0,50.0),Core.FONT_HERSHEY_SIMPLEX,1.0,new Scalar(255,0,0,255),3);
 
         return mRgba;
@@ -267,10 +273,11 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         Log.i(TAG, "called onCreateOptionsMenu");
-        mItemFace50 = menu.add("Face size 50%");
+        //mItemFace50 = menu.add("Face size 50%");
         mItemFace40 = menu.add("Face size 40%");
         mItemFace30 = menu.add("Face size 30%");
         mItemFace20 = menu.add("Face size 20%");
+        mItemFace10 = menu.add("Face size 10%");
         //mItemType   = menu.add(mDetectorName[mDetectorType]);
         return true;
     }
@@ -278,8 +285,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         Log.i(TAG, "called onOptionsItemSelected; selected item: " + item);
-        if (item == mItemFace50)
-            setMinFaceSize(0.5f);
+        if (item == mItemFace10)
+            setMinFaceSize(0.1f);
         else if (item == mItemFace40)
             setMinFaceSize(0.4f);
         else if (item == mItemFace30)

@@ -13,7 +13,7 @@ extern "C" {
  * Signature: (Ljava/lang/String;F)J
  */
 JNIEXPORT jlong JNICALL Java_org_opencv_samples_facedetect_DetectionBasedTracker_nativeCreateObject
-  (JNIEnv *, jclass, jstring, jint);
+  (JNIEnv *, jclass, jstring, jstring, jint);
 
 /*
  * Class:     org_opencv_samples_fd_DetectionBasedTracker
