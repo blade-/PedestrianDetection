@@ -44,11 +44,11 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     //public static final int        JAVA_DETECTOR       = 0;
    // public static final int        NATIVE_DETECTOR     = 1;
     
-    //private MenuItem               mItemFace50;
+    private MenuItem               mItemFace50;
     private MenuItem               mItemFace40;
     private MenuItem               mItemFace30;
     private MenuItem               mItemFace20;
-    private MenuItem               mItemFace10;
+    //private MenuItem               mItemFace10;
   //  private MenuItem               mItemType;
 
     private Mat                    mRgba;
@@ -265,7 +265,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
        // Point p2 = new Point(.0,10.0);
         //Core.rectangle(mRgba, p1, p2, FACE_RECT_COLOR, 3);
         //Core.putText(mRgba, String.valueOf(headsArray.length), new Point(50.0,50.0),Core.FONT_HERSHEY_SIMPLEX,1.0,new Scalar(0,0,255,255),3);
-        Core.putText(mRgba, String.valueOf(facesArray.length), new Point(100.0,50.0),Core.FONT_HERSHEY_SIMPLEX,1.0,new Scalar(255,0,0,255),3);
+        Core.putText(mRgba, String.valueOf(facesArray.length), new Point(50.0,50.0),Core.FONT_HERSHEY_SIMPLEX,1.0,new Scalar(0,0,255,255),3);
 
         return mRgba;
     }
@@ -273,11 +273,11 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         Log.i(TAG, "called onCreateOptionsMenu");
-        //mItemFace50 = menu.add("Face size 50%");
+        mItemFace50 = menu.add("Face size 50%");
         mItemFace40 = menu.add("Face size 40%");
         mItemFace30 = menu.add("Face size 30%");
         mItemFace20 = menu.add("Face size 20%");
-        mItemFace10 = menu.add("Face size 10%");
+        //mItemFace10 = menu.add("Face size 10%");
         //mItemType   = menu.add(mDetectorName[mDetectorType]);
         return true;
     }
@@ -285,8 +285,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         Log.i(TAG, "called onOptionsItemSelected; selected item: " + item);
-        if (item == mItemFace10)
-            setMinFaceSize(0.1f);
+        if (item == mItemFace50)
+            setMinFaceSize(0.5f);
         else if (item == mItemFace40)
             setMinFaceSize(0.4f);
         else if (item == mItemFace30)
