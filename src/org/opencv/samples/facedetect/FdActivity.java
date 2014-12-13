@@ -41,6 +41,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private static final String    TAG                 = "OCVSample::Activity";
     private static final Scalar    FACE_RECT_COLOR     = new Scalar(0, 255, 0, 255);
     private static final Scalar    HEAD_RECT_COLOR     = new Scalar(255, 255, 0, 255);
+    private static final int       FRAMERATE = 6;
     //public static final int        JAVA_DETECTOR       = 0;
    // public static final int        NATIVE_DETECTOR     = 1;
     
@@ -55,6 +56,8 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     private Mat                    mGray;
     private File                   mHogCascadeFile;
     private File                   mLbpCascadeFile;
+    private int                    nframe;
+    private  MatOfRect             faces; 
    // private CascadeClassifier      mJavaDetector;
     //private DetectionBasedTracker  mNativeFaceDetector;
    // private DetectionBasedTracker  mNativeHeadDetector;
@@ -137,7 +140,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         //mDetectorName = new String[2];
         //mDetectorName[JAVA_DETECTOR] = "Java";
         //mDetectorName[NATIVE_DETECTOR] = "Native (tracking)";
-
+    	nframe = 0;
         Log.i(TAG, "Instantiated new " + this.getClass());
     }
 
@@ -183,6 +186,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     public void onCameraViewStarted(int width, int height) {
         mGray = new Mat();
         mRgba = new Mat();
+        faces = new MatOfRect();
        // mNativeDetector.start();
        // mNativeDetector.start();
     }
@@ -190,6 +194,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
     public void onCameraViewStopped() {
         mGray.release();
         mRgba.release();
+        faces.release();
        // mNativeDetector.stop();
        // mNativeDetector.stop();
     }
@@ -198,6 +203,7 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 
         mRgba = inputFrame.rgba();
         mGray = inputFrame.gray();
+        nframe = (nframe+1)%FRAMERATE;
 //        Configuration config = getResources().getConfiguration();
 //        Display display = ((WindowManager)mOpenCvCameraView.getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         //Mat dst = new Mat();
@@ -218,16 +224,17 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
 //            Point p4 = new Point(70.0,70.0);
 //            Core.rectangle(mRgba, p3, p4, FACE_RECT_COLOR, 3);
 //        }
-        if (mAbsoluteFaceSize == 0) {
-            int height = mGray.rows();
-            if (Math.round(height * mRelativeFaceSize) > 0) {
-                mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
-            }
+        if(nframe == 0){
+        	if (mAbsoluteFaceSize == 0) {
+        		int height = mGray.rows();
+        		if (Math.round(height * mRelativeFaceSize) > 0) {
+        			mAbsoluteFaceSize = Math.round(height * mRelativeFaceSize);
+        		}
             //mNativeHeadDetector.setMinFaceSize(mAbsoluteFaceSize);
-            mNativeMultiDetector.setMinFaceSize(mAbsoluteFaceSize);
-        }
+        		mNativeMultiDetector.setMinFaceSize(mAbsoluteFaceSize);
+        	}
 
-        MatOfRect faces = new MatOfRect();
+        //MatOfRect faces = new MatOfRect();
        // MatOfRect heads = new MatOfRect();
         //if (mDetectorType == JAVA_DETECTOR) {
         //    if (mJavaDetector != null)
@@ -242,18 +249,23 @@ public class FdActivity extends Activity implements CvCameraViewListener2 {
         //else{
         //	Log.e(TAG, "No Head Detector!");
         //}
-        if (mNativeMultiDetector != null){
-        	mNativeMultiDetector.detect(mGray, faces);
-        }
-        else{
-        	Log.e(TAG, "No Multi Detector!");
-        }
+        	if (mNativeMultiDetector != null){
+        		mNativeMultiDetector.detect(mGray, faces);
+        	}
+        	else{
+        		Log.e(TAG, "No Multi Detector!");
+        	}
             
        // }
      //   else {
     //        Log.e(TAG, "Detection method is not selected!");
      //   }
-
+        
+        	
+        }
+       // else{
+        	//Core.putText(mRgba, "No Detecion", new Point(100.0,100.0),Core.FONT_HERSHEY_SIMPLEX, 2.0, new Scalar(255,0,0,255),3);
+        //}
         Rect[] facesArray = faces.toArray();
         //Rect[] headsArray = heads.toArray();
         for (int i = 0; i < facesArray.length; i++)
